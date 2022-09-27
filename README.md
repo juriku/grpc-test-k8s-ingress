@@ -24,6 +24,6 @@ add /etc/hosts - 127.0.0.1 nginx1.example.com
 ## TEST
 
 ```
-cd podlifecycle/cli
+cd serverclient/cli
 go run main.go
 ```

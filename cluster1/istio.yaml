@@ -11,7 +11,7 @@ spec:
       name: http
       protocol: GRPC
     hosts:
-    - "*"
+    - nginx1.example.com
   - port:
       number: 443
       name: https
@@ -20,7 +20,7 @@ spec:
       mode: SIMPLE
       credentialName: example-tls
     hosts:
-    - "*"
+    - nginx1.example.com
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -30,7 +30,7 @@ spec:
   gateways:
   - tls-gateway
   hosts:
-    - "*"
+    - nginx1.example.com
   http:
   - match:
     - uri:
