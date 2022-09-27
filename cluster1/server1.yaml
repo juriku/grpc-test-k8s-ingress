@@ -1,0 +1,102 @@
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: server1
+#   annotations:
+#     nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+#     nginx.ingress.kubernetes.io/ssl-redirect: "true"
+# spec:
+#   ingressClassName: nginx
+#   rules:
+#   - host: nginx1.example.com
+#     http:
+#       paths:
+#       - pathType: Prefix
+#         path: "/"
+#         backend:
+#           service:
+#             name: server1
+#             port:
+#               number: 8080
+#   tls:
+#   - hosts:
+#       - nginx1.example.com
+#     secretName: example-tls
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: gateway
+#   annotations:
+#     kubernetes.io/ingress.class: "istio"
+# spec:
+#   rules:
+#   - host: nginx1.example.com
+#     http:
+#       paths:
+#       - path: /
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: server1
+#             port:
+#               number: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: server1
+  labels:
+    app: server1
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      name: grpc-server
+  selector:
+    app: server1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: server1
+  name: server1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: server1
+  strategy:
+    rollingUpdate:
+      # This should be set to 0 if we only have 1 replica defined
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: server1
+        version: "1"
+    spec:
+      containers:
+        - image: juriku/grpc-test:1
+          livenessProbe:
+            exec:
+              command:
+                - /usr/bin/local/grpc-health-probe
+                - -addr=localhost:8080
+            initialDelaySeconds: 30
+            failureThreshold: 1
+            successThreshold: 1
+            periodSeconds: 10 # this is 3 times the period on readinessProbe
+          readinessProbe:
+            exec:
+              command:
+                - /usr/bin/local/grpc-health-probe
+                - -addr=localhost:8080
+            initialDelaySeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+            periodSeconds: 3
+          name: server
+          ports:
+            - containerPort: 8080

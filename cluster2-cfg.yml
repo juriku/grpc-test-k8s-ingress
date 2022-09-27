@@ -1,0 +1,21 @@
+apiVersion: k3d.io/v1alpha4
+kind: Simple
+metadata:
+  name: cluster2
+agents: 0
+ports:
+  - port: 802:80
+    nodeFilters:
+      - server:*
+  - port: 4432:443
+    nodeFilters:
+      - server:*
+options:
+  k3s:
+    extraArgs:
+      - arg: --tls-san=127.0.0.1
+        nodeFilters:
+          - server:*
+      - arg: --no-deploy=traefik
+        nodeFilters:
+          - server:*
