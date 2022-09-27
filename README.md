@@ -25,5 +25,10 @@ add /etc/hosts - 127.0.0.1 nginx1.example.com
 
 ```
 cd serverclient/cli
+# plaintext
 go run main.go
+# public tls
+go run mains.go
+# client-server tls
+go run mainsm.go
 ```
